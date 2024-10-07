@@ -1,0 +1,206 @@
+доделай мой код улучши 
+я хочу сделать 3D платформер фол гайс
+на react typescript three.js
+
+вот задание
+
+Вместе с тестовым заданием обязательно присылайте свое резюме. Кандидаты без резюме в
+отборе участвовать не будут. Резюме может быть кратким, но содержать основную инфу
+
+Необходимо написать простой 3D платформер, в котором персонаж должен переместиться от точки
+старта до финишной прямой, через поле, наполненное препятствиями. Референс того, что должно
+получиться - уровни из игры Fall Guys.
+Точка старта — это платформа 10х10 метров, на которой ставится игрок. От точки старта расходится
+несколько троп, переплетенных друг с другом. У финишной прямой все тропы сходятся в одну.
+Тропы состоят из платформ 3х3 метра.
+Часть блоков, из которых состоит тропа — это ловушки, которые разными способами мешают
+игроку добраться до финиша. Для тестового задания нужно реализовать минимум 3-4 разных типа
+ловушек. Две из них обязательные:
+При наступании игрока на блок, тот активируется (загорается оранжевым цветом) и через 1 секунду
+нанесет урон всем, кто стоит на блоке (моргнув красным цветом). После нанесения урона ловушка
+"перезаражается" в течении 5 секунд, после чего начинает свою логику с самого начала.
+Блок, на котором дует ветер, толкая персонажа с определённой силой. Ветер действует на
+персонажа только пока он находится в блоке. Направление ветра меняется раз в 2 секунды на
+случайное. Ветер дует строго горизонталью.
+Другие ловушки придумайте сами, примеры ловушек можно посмотреть в игре Fall Guys.
+Желательно чтобы механика работы ловушки была понятна среднестатистическому казуальному
+игроку.
+Игра завершается двумя способами - победой или поражением
+Для победы нужно пересечь финишную прямую. В этот момент отображается сообщение на весь
+экран "Победа!" и кнопка, перезапускающая игру. В этом же экране указывается время
+прохождения уровня, которое считается от момента пересечения стартовой прямой.
+Игрок проигрывает если упадет с тропы в пропасть или у него закончится здоровье. Здоровье всегда
+должно отображаться на экране. Когда игрок проигрывает, появляется экран с надписью
+"Поражение!" и кнопкой, перезапускающей игру.
+
+вот мой код:
+import React from 'react';
+import { Game } from './components/Game';
+
+const App: React.FC = () => {
+  return <Game />;
+};
+
+export default App;
+
+import React from 'react';
+import { Game } from './components/Game';
+
+const App: React.FC = () => {
+  return <Game />;
+};
+
+export default App;
+
+import React from 'react';
+import * as THREE from 'three';
+
+const Ground: React.FC = () => {
+  return (
+    <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[100, 100]} />
+      <meshStandardMaterial color="lightblue" />
+    </mesh>
+  );
+};
+
+export default Ground;
+
+import React from 'react';
+import { Box } from '@react-three/drei';
+
+export const Obstacle: React.FC<{ position: [number, number, number] }> = ({ position }) => {
+  return (
+    <Box position={position} args={[9, 2, 9]}>
+      <meshStandardMaterial color="red" />
+    </Box>
+  );
+};
+
+import React, { useRef, useState } from 'react';
+import { useFrame } from '@react-three/fiber';
+import * as THREE from 'three';
+import { useKeyboardControls } from './useKeyboardControls';
+
+export const Player: React.FC = () => {
+  const ref = useRef<THREE.Mesh>(null!);
+  const [velocity] = useState(new THREE.Vector3());
+  const controls = useKeyboardControls();
+
+  useFrame(() => {
+    if (ref.current) {
+      controls.update(velocity, ref.current.position);
+      ref.current.position.add(velocity);
+
+      if (ref.current.position.y < 1) {
+        ref.current.position.y = 1;
+      }
+    }
+  });
+
+  return (
+    <mesh ref={ref} position={[0, 1, 0]}>
+      <boxGeometry args={[1, 2, 1]} />
+      <meshStandardMaterial color="green" />
+    </mesh>
+  );
+};
+
+import React, { useState, useEffect } from 'react';
+import { Box } from '@react-three/drei';
+
+export const TrapDamage: React.FC<{ position: [number, number, number] }> = ({ position }) => {
+  const [active, setActive] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActive((prev) => !prev);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <Box position={position} args={[9, 0.1, 9]}>
+      <meshStandardMaterial color={active ? 'red' : 'orange'} />
+    </Box>
+  );
+};
+
+import { useEffect, useCallback, useState } from 'react';
+import * as THREE from 'three';
+
+export const useKeyboardControls = () => {
+  const keys = {
+    W: false,
+    A: false,
+    S: false,
+    D: false,
+    Space: false,
+  };
+
+  const velocity = new THREE.Vector3();
+  const [isGrounded, setIsGrounded] = useState(true);
+
+  const update = useCallback((velocity: THREE.Vector3, playerPosition: THREE.Vector3) => {
+    const speed = 0.05; 
+    const jumpSpeed = 0.2; 
+    const gravity = 0.01; 
+
+
+    velocity.x = 0;
+    velocity.z = 0;
+
+    if (keys.W) velocity.z = -speed;
+    if (keys.S) velocity.z = speed;
+    if (keys.A) velocity.x = -speed;
+    if (keys.D) velocity.x = speed;
+
+    if (keys.Space && isGrounded) {
+      velocity.y += jumpSpeed;
+      setIsGrounded(false);
+    }
+
+    velocity.y -= gravity;
+
+    if (velocity.y < -0.3) velocity.y = -0.3;
+
+    if (playerPosition.y <= 0 && velocity.y <= 0) {
+      setIsGrounded(true); 
+      velocity.y = 0; 
+    }
+  }, [isGrounded]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const key = e.key.toUpperCase();
+      if (key in keys) keys[key as keyof typeof keys] = true;
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      const key = e.key.toUpperCase();
+      if (key in keys) keys[key as keyof typeof keys] = false;
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, []);
+
+  return { update, velocity, setIsGrounded };
+};
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './styles.css';
+import App from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root')!);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);

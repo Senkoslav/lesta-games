@@ -1,19 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { Box } from '@react-three/drei';
 
-export const TrapDamage: React.FC<{ position: [number, number, number] }> = ({ position }) => {
-  const [active, setActive] = useState(false);
+interface TrapDamageProps {
+  position: [number, number, number];
+  size: [number, number, number];
+}
+
+export const TrapDamage: React.FC<TrapDamageProps> = ({ position, size }) => {
+  const [state, setState] = useState<'idle' | 'activated' | 'cooldown'>('idle');
+  const [timer, setTimer] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActive((prev) => !prev);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    let interval: NodeJS.Timeout;
+    if (state === 'activated') {
+      interval = setTimeout(() => {
+        setState('cooldown');
+      }, 1000); // Нанесение урона через 1 секунду
+    } else if (state === 'cooldown') {
+      interval = setTimeout(() => {
+        setState('idle');
+      }, 5000); // Перезарядка 5 секунд
+    }
+    return () => clearTimeout(interval);
+  }, [state]);
+
+  const color =
+    state === 'activated' ? 'orange' : state === 'cooldown' ? 'gray' : 'red';
 
   return (
-    <Box position={position} args={[9, 0.1, 9]}>
-      <meshStandardMaterial color={active ? 'red' : 'orange'} />
+    <Box position={position} args={size}>
+      <meshStandardMaterial color={color} />
     </Box>
   );
 };

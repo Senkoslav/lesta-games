@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { Box } from '@react-three/drei';
+import * as THREE from 'three';
 
-export const TrapWind: React.FC<{ position: [number, number, number] }> = ({ position }) => {
-  const [active, setActive] = useState(false);
+interface WindTrapProps {
+  position: [number, number, number];
+  size: [number, number, number];
+}
+
+export const WindTrap: React.FC<WindTrapProps> = ({ position, size }) => {
+  const [windDirection, setWindDirection] = useState<THREE.Vector3>(
+    new THREE.Vector3(1, 0, 0)
+  );
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setActive((prev) => !prev);
-    }, 2000);
+      const angle = Math.random() * Math.PI * 2;
+      setWindDirection(new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle)));
+    }, 2000); // Изменение направления ветра каждые 2 секунды
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <Box position={position} args={[3, 0.1, 3]}>
-      <meshStandardMaterial color={active ? 'blue' : 'lightblue'} />
+    <Box position={position} args={size}>
+      <meshStandardMaterial color="blue" />
     </Box>
   );
 };

@@ -1,14 +1,10 @@
-// Ground.tsx
 import React from 'react';
-import * as THREE from 'three';
 
-const Ground: React.FC = () => {
+export const Ground: React.FC = () => {
   return (
-    <mesh position={[0, 0, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-      <planeGeometry args={[100, 100]} />
-      <meshStandardMaterial color="lightblue" />
+    <mesh position={[0, -0.5, 0]}>
+      <boxGeometry args={[500, 1, 500]} />
+      <meshStandardMaterial color="lightgreen" />
     </mesh>
   );
 };
-
-export default Ground;
