@@ -15,11 +15,11 @@ export const TrapDamage: React.FC<TrapDamageProps> = ({ position, size }) => {
     if (state === 'activated') {
       interval = setTimeout(() => {
         setState('cooldown');
-      }, 1000); // Нанесение урона через 1 секунду
+      }, 1000); 
     } else if (state === 'cooldown') {
       interval = setTimeout(() => {
         setState('idle');
-      }, 5000); // Перезарядка 5 секунд
+      }, 5000); 
     }
     return () => clearTimeout(interval);
   }, [state]);

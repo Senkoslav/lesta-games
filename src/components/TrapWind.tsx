@@ -16,7 +16,7 @@ export const WindTrap: React.FC<WindTrapProps> = ({ position, size }) => {
     const interval = setInterval(() => {
       const angle = Math.random() * Math.PI * 2;
       setWindDirection(new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle)));
-    }, 2000); // Изменение направления ветра каждые 2 секунды
+    }, 2000); 
     return () => clearInterval(interval);
   }, []);
 
